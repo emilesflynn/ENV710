@@ -1,0 +1,130 @@
+---
+title: "week2script"
+author: "Elizabeth Miles-Flynn"
+date: "2026-01-21"
+output: html_document
+---
+
+## Set Up
+
+```{r setup in CONSOLE, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages("rmarkdown", dep = TRUE)
+#install.packages("tinytex")
+#tinytex::install.tinytex()
+```
+
+What is R Markdown? *R Markdown: The Definitive Guide* by Yihui Xie, J.J. Allaire, and Garrett Grolemund <https://bookdown.org/yihui/rmarkdown>
+
+## Getting started
+
+1.  Open R Markdown File: File \> New File \> R Markdown
+2.  Insert a new embedded R code chunk (1) click green +C OR (2) ctrl+alt+I
+
+```{r}
+#Create a new variable
+bird <- 14
+bird
+```
+
+3.  Modify what is included in the knit file in the {r} heading of your code chunk
+
+-   echo = FALSE to hide the code but show the output
+
+-   include = FALSE to hide both the code and the output
+
+-   eval = FALSE to neither run nor display the code/output from a given code chunk
+
+-   message = FALSE to hide any messages that results from running the code
+
+-   warning = FALSE to hide any warnings that results from running the code
+
+-   fig.cap = "Insert Figure Caption Here" to add a figure caption that might result from your code
+
+```{r, echo = FALSE}
+# Example of modifying what is in knit file
+```
+
+4.  Create an outline with headings or modify text "\#" creates headings (more used, smaller heading size) "\*" surround word to italicize "\*\*" surround word to bold (dash symbol or asterisk) creates lists
+
+## Loading and Examining Data
+
+```{r load nessary packages, echo=TRUE, results = 'hide'}
+# Load necessary packages
+library(here)
+library(tidyverse)
+library(viridis)
+
+# Install Iterdatasampler, which includes this week's data
+#install.packages("lterdatasampler")
+library("lterdatasampler")
+```
+
+```{r examines the structure of the dataset using the str() fxn, echo=TRUE, results = 'hide'}
+# Rename data
+crab_data <- pie_crab
+
+# Learn about str then examine data structure
+?str #compactly displays the internal structure of an R object, list contents
+str(crab_data) #shows dataset dimensions, each column's data format
+```
+
+## Manipulating Data
+
+```{r Tidy Data, echo=TRUE, results = 'hide'}
+# Use the select () fxn to select column(s)
+select(crab_data, air_temp)
+
+# Use the filter() fxn to filter based on certain conditions
+filter(crab_data, water_temp > 20)
+
+# Use the mutate() fxn to create a new column
+mutate(crab_data, air_water_diff = air_temp - water_temp)
+```
+
+Save your changes to a new dataset/variable names as you go. Keep a copy of the raw data (in this case crab_data) and then make edits to newly created datasets. - Pipe Operator (%\>%) allows you to run all manipulations in a single code chunk
+
+```{r practice piping and creating new datasets, echo=TRUE, results = 'hide'}
+# Create a new dataset called "crab_new"
+
+# First, start with your original data and then...
+crab_new <- crab_data %>%
+  # Create a new column with air and water temperatures multiplied and then...
+  mutate(airxwater = air_temp * water_temp) %>%
+  # Pull out (filter) entries for the Plum Island Ecosystem study only
+  filter(site == "PIE")
+# End of pipe
+
+# Practice problem: new dataset that filters water temperature less than 18 degrees, and only selects site and size columns
+crab_cool <- crab_data %>%
+  filter(water_temp < 18) %>%
+  select(site, size)
+```
+
+Check the output dataset using the View() fxn as you create piped code
+
+## Data Visualization
+
+```{r plot data, echo = FALSE}
+ggplot(data = crab_data, aes(x = site, y = size, fill = site)) + #only base dataset and axes to include, not information on how to plot it...
+  geom_boxplot() + #add boxplots
+  #geom_point() + #add multiple layers of graphics
+  labs(x = "Site Location", #add labels ex.informative axes titles
+       y = "Size (mm)") +
+  scale_fill_viridis(discrete = TRUE) + #change colors by data (fill or color) and specify values are discrete
+  theme_bw() + #remove grey background
+  theme(legend.position = "none") #remove legend
+```
+
+Additional resources for figure customization
+
+-   *The R Graph Gallery* <https://r-graph-gallery.com/>
+
+-   *ggplot2 extensions* <https://exts.ggplot2.tidyverse.org/gallery/>
+
+-   *The Paleteer gallery* <https://pmassicotte.github.io/paletteer_gallery/>
+
+-   *ggplot2 Cheat sheet* <https://posit.co/wp-content/uploads/2022/10/data-visualization-1.pdf>
+
+
