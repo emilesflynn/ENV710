@@ -1,0 +1,170 @@
+---
+title: "Week3Script"
+author: "Elizabeth Miles-Flynn"
+date: "2026-01-28"
+output: pdf_document
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages("moments")
+
+#Load necessary packages
+library(here)
+library(tidyverse)
+library(moments)
+```
+
+# Discrete Distributions
+
+## Discrete Probability
+
+[**Bernoulli trail**]{.underline} - exp w/ two possible outcomes (success or failure)
+
+**dbinom(k,n,p)** calculates the probability of an exact number of successes (X=*k*) out of *n* berunoulli trials, when each trial has *p* probability success
+
+```{r P(X=3), n=16, p=0.48}
+# probability of three successes
+dbinom(x = 3, size = 16, prob = 0.48)
+## answer: 0.01258796
+
+# Probability of 0-16 successes
+prob <- dbinom (x = 0:16, size = 16, prob = 0.48)
+## answer: num [1:17]
+ #[1] 2.857943e-05 4.220961e-04 2.922204e-03
+ #[4] 1.258796e-02 3.776387e-02 8.366149e-02
+ #[7] 1.415810e-01 1.867002e-01 1.938810e-01
+#[10] 1.590818e-01 1.027913e-01 5.175508e-02
+#[13] 1.990580e-02 5.653718e-03 1.118318e-03
+#[16] 1.376391e-04 7.940718e-06
+
+# Create a list of numbers of successes
+success <- 0:16
+## answer: int [1:17]
+# [1]  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14
+#[16] 15 16
+
+# Bind two columns together to create a dataframe
+binom_df <- cbind(prob, success)
+
+# Create a figure
+ggplot(binom_df, aes(x = success,
+                     y = prob)) +
+  geom_bar(stat = "identity") +
+  labs (x = "X",
+        y = "Probability",
+        title = "The Probability of Getting 0-16 successes out of 16 trails.")
+```
+
+**pbinom(k,n,p)** calculates the probability of *k or fewer* number of successes (X\<*k*) out of *n* berunoulli trials, when each trial has *p* probability success
+
+```{r P(X<3) OR sum indiv prob}
+# Cumulative probability using dbinom
+sum(dbinom(x = 0:3, size = 16, prob = 0.48))
+## answer: 0.01596084
+
+# Cumulative probability using generated data
+# adding together rows 1 through 4
+sum(prob[1:4])
+## answer: 0.01596084
+
+# Probability of three or fewer successes
+pbinom(q = 3, size = 16, prob = 0.48)
+## answer: 0.01596084
+```
+
+## Poisson Distributions
+
+Discrete Probability Fxn, modeling outcome counts *dpois(x, lambda)* calc prob *x* occurances, *lambda* mean rate of occurrence
+
+```{r P(Mt. Baldy struck by lightning 10 times/yr), mean 3 lightning strikes/yr}
+# Probability of 10 occurances
+dpois(x = 10, lambda = 3)
+## answer:  0.0008101512
+
+# Probability of 3 or fewer occurences
+ppois(q = 3, lambda = 3)
+## answer:  0.6472319
+```
+
+## Assessing Normality
+
+1.  Think about your data
+2.  Examine your data
+3.  Quantitatively analyze your data
+
+```{r 'Beaver1' beaver body temp dataset, histogram and QQ plot}
+# Consider info on how this data was collected
+?beaver1()
+
+# Visually inspect data
+View(beaver1)
+
+# Create a histogram of beaver body temp
+ggplot(beaver1, aes(x = temp)) +
+  geom_histogram() +
+  labs(x = 'Beaver Body Temperature (C)',
+       y = 'Count')
+## note: don't assign plot to a new variable name, code in RMarkdown not Environment
+
+# Create a Q-Q plot of beaver body temperature
+ggplot(beaver1, aes(sample = temp)) +
+  geom_qq() +
+  geom_qq_line() +
+  labs (x = 'Theoretical Normal Distribution',
+        y = 'Raw Temperature Values')
+```
+
+Use *skewness()* and *kutrosis()* fxns from **moments** package to quantitatively assess normality.
+
+-   **Skewness (s)** range from |s|>1 (highly skewed), 0.5<|s|<1 (moderately skewed), 0<|s|<0.5 (approx. symmetrical), s = 0 (perfectly symmetrical)
+
+-   **Kurtosis (k)** range from k > 3 (leptokurtic), k = 3 (mesokurtic), k <3 (platyturtic))
+```{r}
+# Calculate skewwness of beaver body temp
+skewness(beaver1$temp)
+## answer: -0.02782567
+
+# Calculate kurtosis of beaver body temp
+kurtosis(beaver1$temp)
+## answer: 4.351118
+```
+
+# Continuous Probability in R
+## Normal Distributions
+    **pnorm()** calc area under the probability density function (pdf) of a normal dist *to the left of* a specified x-value
+    **dnorm()** visualizes distribution
+    **seq()** generates a sequence of values by specifying a starting/ending/equally-spaced values
+```{r Continuous Distributions, P(X<1), mean = 2, stdev = 3}
+# Probability of value < 1
+pnorm(q = 1, mean = 2, sd = 3)
+## answer:  0.3694413 OR 36.9% chance a random variable with a mean of 2 and a standard deviation of 3 is less than 1.
+
+# Create a list of values with lots of values
+# in between whole numbers (so our curve looks nice and smooth)
+values <- seq(-10, 14, length = 1000)
+
+# Probability densities for values -10 to 14
+prob_norm <- dnorm(x = values, mean = 2, sd = 3)
+
+# Bind two columns together to create a dataframe
+norm_df <- cbind(prob_norm, values)
+
+# Create a figure
+ggplot(norm_df, aes(x = values,
+                    y = prob_norm)) +
+         geom_line() +
+         labs(x = "X",
+              y = "Probability Density",
+              title = "The PDF of X ~ N(2,3).")
+```
+    **qnorm()** x-value below upper bound of probability
+```{r P(x < 80% random variables)}
+# Value of "x" for a given probability
+qnorm(p = 0.8, mean = 2, sd = 3)
+## answer: 4.524864 OR 80% of the pop[ulation has a value less than 4.52]
+```
+

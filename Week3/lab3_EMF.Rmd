@@ -1,0 +1,98 @@
+---
+title: "lab3_EMF"
+author: "Elizabeth Miles-Flynn"
+date: "2026-02-04"
+output: pdf_document
+---
+
+## Set Up
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+library(tidyverse)
+library(moments)
+```
+
+
+## 1. Discrete Probability Distributions
+
+```{r Question 1 analysis}
+#1a. a. Say you flip a fair, unweighted coin 20 times. What is the probability of obtaining 5 or fewer heads? (1 pt)
+pbinom(q = 5, size = 20, prob = 0.5)
+
+#1b. Now, you switch to using an unfair, weighted coin whose probability of landing on heads is 80%. If you flip the new, weighted coin 15 times, what is the probability of obtaining 10 or more heads? (1 pt)
+1-(pbinom(q = 10, size = 15, prob = 0.80))
+
+#1c. Many busy ocean shipping routes overlap with key whale migratory routes along the coast. In the Santa Barbara Channel, the mean number of whale strikes (by shipping vessels) is 12.2 per year. What is the probability that only 6 whale strikes will occur this coming year? What is the probability that 6 or fewer whale strikes will occur this coming year? ( 2 pts)
+dpois(x = 6, lambda = 12.2)
+ppois(q = 6, lambda = 12.2)
+```
+### Question 1 ANSWERS:
+1a. There is a 0.021 probability of obtaining 5 or fewer heads, after flipping a fair coin 20 times.
+
+1b. There is a 0.836 probability of obtaining 10 or more heads, after flipping a weighted coin 15 times.
+
+1c. The probability that only 6 whale strikes will occur this coming year is 0.023. While there is a probabilty that 6 or fewer whale strikes will occur this coming year is 0.041.
+
+
+## 2. Assessing Normality
+
+These data are from the Long Term Ecological Research Program (LTER) Network’s Konza
+Prairie. Use library(lterdatasampler) to load the package which includes the bison data.
+
+Examine the data using View(knz_bison). Create a new dataset to filter for records only from
+adult bison (age > 3 years) (Hint: You will likely first need to create a new column using
+mutate() to calculate the age of each bison based on their birth year and the year of the
+measurement.)
+
+```{r Question 2 analysis}
+#2a. Each year since 1994, the Konza Prairie Biological Station in Kansas rounds up a herd of 300+ bison to weigh and ID each individual. Bison display sexual dimorphism, meaning males are typically much larger than females. In addition, there is a strong, positive relationship between age (in years) and weight (in pounds). We are interested in seeing whether the weights of adult bison (age > 3 years) are normally distributed. Create a histogram and a quantile-quantile plot examining the distribution of weights of adult bison. Make sure you use an appropriate number of bins in your histogram and that both figures include proper axes labels and captions. (5 pts)
+library(lterdatasampler)
+View(knz_bison)
+knz_bison <- mutate(knz_bison, age = rec_year - animal_yob)
+adult_bison <- filter(knz_bison, age > 3)
+
+adult_bison_histogram <- ggplot(adult_bison, aes(x = animal_weight)) +
+  geom_histogram() +
+  labs(x = "Adult Bison Weight (lbs)",
+       y = "Count")
+adult_bison_histogram
+
+adult_bison_QQPlot <- ggplot(adult_bison, aes(sample = animal_weight)) +
+  geom_qq() +
+  geom_qq_line() +
+  labs (x = "Theoretical Normal Distribution",
+        y = "Raw Adult Bison Weight Values (lbs)")
+adult_bison_QQPlot
+
+#2b. For the same bison data, calculate and report the skewness and kurtosis values for the weight of adult bison. (2 pts)
+skewness(adult_bison$animal_weight)
+kurtosis(adult_bison$animal_weight)
+
+#2c. Based on the information provided, your figures, and your analyses, explain in 1-2 sentences why you would or would not assume these data are normally distributed. (4 pts)
+```
+### Question 2  ANSWERS:
+The distribution of adult bison weights have a long, right tailed-skew (1.53 skewness is greater than 1 representing a high skew AND 4.76 kurtosis is greater than 3 representing a leptokurtic, heavier tail than normal distribution). Therefore, adult bison weight is not assumed to be normally distributed because the Q-Q Plot showcases raw adult bison weight distributed far beyond the normality reference line after the z-score of 1 from the theoretical normal distribution. 
+
+
+## 3. Continuous Probability Distributions
+```{r Question 3 Analysis}
+#3a. Continuing to use the same bison data, create a new dataset that filters your adult bison data only for female bison. What are the mean and standard deviation values for weights of adult, female bison? (2 pts)
+adult_bison_F <- filter(adult_bison, animal_sex == "F")
+mean(adult_bison_F$animal_weight)
+sd(adult_bison_F$animal_weight)
+
+#3b. Assuming the adult, female bison weight data are normally distributed, what is the probability of capturing an adult, female bison weighing less than 900 pounds? Weighing between 900 and 1100 pounds? What is the value below which 95% of adult female bison are expected to weigh? (3 pts)
+pnorm(q = 900, mean = 992.5751, sd = 90.00992)
+
+pnorm(q = 1100, mean = 992.5751, sd = 90.00992) - pnorm(q = 900, mean = 992.5751, sd = 90.00992)
+
+qnorm(p = 0.95, mean = 992.5751, sd = 90.00992)
+
+```
+### Question 3 ANSWERS:
+3a. The mean adult, female bison weight is 992.6 pounds and the standard deviation is 90 pounds.
+
+3b. There is a 15.2% chance of of capturing an adult, female bison weighing less than 900 pounds. There is a 73.2% change of capturing an adult, female bison weighing between 900 and 1100 pounds. 95% of adult female bison are expected to weigh less than 1141 pounds. 
