@@ -1,0 +1,169 @@
+---
+title: "Lab 4: Confidence Intervals and T-tests"
+author: "Elizabeth Miles-Flynn"
+date: "2026-02-04"
+output: pdf_document
+---
+
+## Setup
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load necessary package
+library(here)
+library(tidyverse)
+library(lterdatasampler)
+```
+
+## New Functions
+```{r}
+# load necessary data
+weather_data <- arc_weather
+
+# Examine data structure
+str(weather_data)
+```
+    **rename(New_column_name = Old_column_name)** -- rename column names
+    **case_when()** w/ mutate() -- makes new column based on rules satisfied by other columns in dataset
+## Tidy Functions
+```{r}
+# Rename precipitation column to include units
+weather_data <- weather_data %>%
+  rename(daily_precip_mm = daily_precip) %>%
+  rename(mean_airtemp_C = mean_airtemp) %>%
+  rename(mean_windspeed_m_s = mean_windspeed)
+
+# Create new column to indicate snowy days
+weather_data <- weather_data %>%
+  # when the air temperature is below freezing
+  mutate(snow_days = case_when(mean_airtemp_C < 0 &
+  # and there is precipitation, we classify the day as SNOWY
+                                 daily_precip_mm > 0 ~ "SNOW",
+  # alternatively, for all other cases, there's no snow
+                               TRUE ~ "NO SNOW")) %>%
+  mutate(windy_days = case_when(mean_windspeed_m_s < 4 ~ "WINDY", 
+                                TRUE ~ "NOT WINDY"))
+```
+
+
+## Confidence Intervals
+
+  **Confidence Internals** -- range of likely values for the population parameter based on:
+    - pt estimate (ex. sample mean)
+    - desired confidence level (95%, approx. 95:100 confidence intervales will contain true mean value)
+    - sampling variability OR std error of pt est.
+    
+### CIs for Continuous Data
+  **t.test()* -- calc two-sided confidence intervals
+```{r artic weather data, default(alt = "two.sided" and conf.level = "0.95"}
+# sace output of t.test() to new variable name
+precip_test <- t.test(weather_data$daily_precip_mm,
+                      conf.level = 0.9)
+
+# Examine results
+precip_test
+
+# Note: report CI-values using the same #sigfigs as original data!
+```
+
+### CIs for Binary Data
+    **binom.tests()** -- calc CI for binary data (ex. around proportion of success)
+```{r n = 254 students, vote "yes" = 187, 90% CI vote "yes"}
+# Save output of binom.test() to new variable name
+vote_test <- binom.test(x = 187, n = 254, 
+                        conf.level = 0.9)
+
+# Examine results
+vote_test
+```
+
+## One-Sample Hypothesis Tests
+
+  **One-Sample Hypothesis Tests** -- compare sample mean to claim (pop mean)
+    Note: When pop stdev *unknown* use t-dist (n>30)
+    
+### Two-Sided
+
+  **Two-Sided Hypothesis Test** -- without directionality, does hyp claim fall 
+  within bounds of chosen CI?
+```{r CLaim "The mean daily precip is 2 mm" using two-sided hyp test w/ 99% CI}
+# Null hyp: The mean daily precip is 2 mm/day (sample mean = claim)
+# Alt hyp: The mean daily precip is not 2 mm/day (same mean x= claim)
+
+# One Sample t-test
+precip_ttest1 <- t.test(weather_data$daily_precip_mm,
+                        mu = 2
+                        conf.level = 0.99,
+                        alternative = "two.sided")
+# View results
+precip_ttest1
+# 99% CI means alpha = 0.01
+# p < 2.2e-16 so p < alpha
+# REJECT null hyp for alt hyp, mean daily precip is not 2 mm/day b/c p < 0.01
+
+# Ex written result: “While the Alaska Weather Service reports a mean daily precipitation of 2mm/day, based on our sample (mean = 0.95, standard deviation = 2.75), we have determined that the mean precipitation is not 2mm/day (t = -39.567, df = 10,750, p < 0.01, α = 0.01).”
+```
+
+### One-Sided
+  **One-Sided Hyp Test** with directionality
+```{r one-sided hyp test w/ 99% CI "mean daily precip is less than 1 mm"}
+# Null hyp: The mean daily precip is less than 1 mm/day
+# Alt hyp: The mean daily precip is greater than 1 mm/day
+
+# One sample t-test
+precip_ttest2 <- t.test(weather_data$daily_precip_mm,
+                        mu = 1
+                        conf.level = 0.99,
+                        alternative = "greater")
+
+# View results
+precip_ttest2
+# 99% CI means alpha = 0.01
+# p = 0.9678 so p > alpha
+# Retain null hyp, mean daily precip is less than 1 mm/day, b/c p >0.01
+```
+
+## Two-Sample Hypothesis Tests
+    **t.test()** -- need two vectors of data instead of one. Inputs for mean, CI, 1 or 2-sidedness
+    **var.test()** -- two-sample hyp test for equal variances (default = not equal)
+```{r compare precip data in early (1988-2003) to later (2003-2018) for changes in mean daily precip w/ 95% CI}
+# First, use case_when() to create new column that categorizes record collection
+weather_data <- weather_data %>%
+  mutate(time_period = case_when(date < "2003-01-01" ~ "early",
+                                 date >= "2003-01-01" ~ "late",
+                                 true ~ NA)) # NA for any row doesn't meet logical statements
+
+# Create an "early" dataset using the filter() fxn
+early_data <- weather_data %>%
+  filter(time_period == "early")
+late_data <- weather_data %>%
+  filter(time_period == "late")
+
+# Run test for equal variances
+precip_vartest <- var.test (x = early_data$daily_precip_mm,
+                            y = late_data$daily_precip_mm,
+                            alternative = "two.sided",
+                            conf.level = 0.95)
+
+# Examine results
+precip_vartest
+# p-value < 0.05, REJECT null hyp ACCEPT alt hyp, variances are not equal
+
+# Perform t-test calling data from new datasets (two-sided, two-sample t-test for difference?)
+precip_ttest3 <- t.test(early_data$daily_precip_mm,
+                        late_data$daily_precip_mm)
+# No other inputs are needed, assumes difference in means is 0 (mu = 0, conf.level = 0.95, alternative = "two.sided"
+
+# Examine results
+precip_ttest3
+```
+
+**A statement describing the results of this test, as it might appear in a report, might be:** “The mean daily precipitation at Toolik Field Station was not significantly different  before 2003 (mean ± standard deviation = 0.91 ± 2.69, n = 4,959) and after 2003 (m ± sd = 0.98 ± 2.80, n = 5,792), as determined by a two-sample, two-sided t-test (t = -1.26, df = 10,605, p = 0.21, α = 0.05). 
+
+Remember, it is important to try and communicate as many of the following when reporting the results of astatistical test:
+(1) A measure of central tendency and data spread for each sample
+(2) A measure of number of observations collected
+(3) A clear statement of what kind of statistical test was run
+(4) A statement reflecting the outcome of the hypothesis test
+(5) Appropriate numerical outputs of the test (in the case of a t-test, the t-statistic,  degrees of freedom, the p-value, and to be thorough, the α value).
