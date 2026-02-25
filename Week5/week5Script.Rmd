@@ -1,0 +1,140 @@
+---
+title: "Lab5_EMF"
+author: "Elizabeth Miles-Flynn"
+date: "2026-02-24"
+output: pdf_document
+---
+
+# Setup
+```{r}
+# Load necessary packages
+library(here)
+library(tidyverse)
+library(moments)
+library(palmerpenguins)
+
+# Save the palmerpenguins dataset into your Environment
+penguin_dat <- penguins
+```
+
+# Functions for grouping and summarizing data
+```{r}
+# calculate mean and standard deviation values of penguin flipper
+# length according to the island they live on
+flipper_summary <- penguin_dat %>%
+  group_by(island) %>%
+  summarize(mean = mean(flipper_length_mm, na.rm = TRUE),
+            sd = sd(flipper_length_mm, na.rm = TRUE)) %>%
+  ungroup()
+View(flipper_summary)
+```
+
+# Conducting Analysis of Variance (ANOVA) tests
+```{r}
+# Examine penguin body mass by species
+penguin_fig1 <- ggplot(penguin_dat, aes(x = body_mass_g,
+                                        fill = species)) + # base plot
+  geom_histogram() + # creates histograms
+  scale_fill_manual(values = c("darkorange","purple", "cyan4")) + #customize colors
+  labs(x = "Body Mass (g)",
+       y = "Count") + # edit labels
+  facet_grid(.~species) + # facets by species to avoid overlap
+  theme_bw() + # removes the grey background
+  theme(legend.position = "none") # removes the legend
+
+# View figure.
+penguin_fig1
+  
+```
+
+```{r}
+# Filter out only Gentoo values
+gentoo_dat <- penguin_dat %>%
+  filter(species == "Gentoo")
+
+# Calculate skew
+skewness(gentoo_dat$body_mass_g, na.rm = TRUE)
+
+# Calcuate kurtosis
+kurtosis(gentoo_dat$body_mass_g, na.rm = TRUE)
+```
+
+# Barlett's Test for Equal Variance
+```{r}
+# Perform Barlett test
+penguin_var <- bartlett.test(penguin_dat$body_mass_g, penguin_dat$species)
+
+# Examine result
+penguin_var
+```
+
+# Analysis of Variance (ANOVA)
+```{r}
+# Perform a one-way ANOVA
+penguin_ANOVA <- aov(body_mass_g ~ species, data = penguin_dat)
+
+# Examine the results
+summary(penguin_ANOVA)
+```
+
+# Post-hoc Tukey's HSD Test
+```{r}
+# Perform a Tukey's HSD Test
+penguin_Tukey <- TukeyHSD(penguin_ANOVA)
+
+# Examine the results
+penguin_Tukey
+```
+
+# Communicating Results
+```{r}
+# Calculate means and standard deviation
+penguin_summary <- penguin_dat %>%
+  group_by(species) %>%
+  summarize(mean = mean(body_mass_g, na.rm = TRUE),
+            sd = sd(body_mass_g, na.rm = TRUE)) %>%
+  ungroup()
+
+# We also need to rename the 'mean' column ~ you
+# will see why in a moment
+penguin_summary <- penguin_summary %>%
+  rename(body_mass_g = mean)
+
+# Create a plot to display results
+# Because we are using multiple datasets in the same figure,
+# we will specify the aesthetics in each individual data call
+penguin_fig2 <- ggplot() +
+  # add raw data points
+  geom_jitter(data = penguin_dat,
+              aes(x = species, y = body_mass_g,
+                  color = species),
+              alpha = 0.5, size = 0.5) +
+  # add summary statistics
+  geom_point(data = penguin_summary,
+             aes(x = species, y = body_mass_g,
+                 color = species),
+             size = 3) +
+  # add error bars
+  geom_errorbar(data = pengiun_summary,
+                aes(x = species,
+                    ymin = body_mass_g-sd,
+                    ymax = body_mass_g+sd,
+                    color = species),
+                width = 0.1, size = 1) +
+  # add text annotations
+  annotate("text", x = "Adelie", y = 5500,
+           label = "a", size = 8) +
+  annotate("text", x = "Chinstrap", y = 5500,
+           label = "a", size = 8) +
+  annotate("text", x = "Gentoo", y = 6100,
+           label = "b", size = 8) +
+  # edit colors
+  scale_color_manual(value = c("darkorange", "purple", "cyan4")) +
+  # label axes
+  labs(x = "Species",
+       y = "Body Mass (g)") +
+  # remove grey background
+  theme_bw() +
+  # remove legend
+  theme(legend.position = "none")
+```

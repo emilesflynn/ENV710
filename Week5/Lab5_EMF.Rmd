@@ -1,0 +1,190 @@
+---
+title: "Lab 5: Analysis of Variance"
+author: "Elizabeth Miles-Flynn"
+date: "2026-02-24"
+output: pdf_document
+---
+
+# Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load necessary packages
+library(here)
+library(tidyverse)
+library(moments)
+library(lterdatasampler)
+```
+
+# 1. Coastal Giant Salamander
+```{r 1a test if salamander length and habitat have normal distribution}
+# Filter for cascades (C), pools (P), and side channels (SC) for only Coastal giant salamander species. Plot and test whether or not there is normal distribution in dataset.
+str(and_vertebrates)
+view(and_vertebrates)
+
+salamander_data <- and_vertebrates %>%
+  filter(unittype %in% c("C", "P", "SC"),
+         species == "Coastal giant salamander")
+
+salamander_fig1 <- ggplot(salamander_data, 
+                          aes(x = length_2_mm, fill = unittype)) +
+  geom_histogram() +
+    facet_wrap(~unittype) +
+  scale_fill_manual(values = c("C" = "darkorange",
+                               "P" = "purple",
+                               "SC" = "cyan4")) +
+  labs(x = "Snout-to-Tail Length (mm)",
+       y = "Salamander Count",
+       title = "Distribution of Coastal Giant Salamander Lengths Across Various 
+       Habitat Types",
+       caption = "Figure 1. Coastal Giant Salamanders in cascades (C), pools (P), 
+       and side channel (SC) habitats. Dataset collected by H.J. Andrews Long 
+       Term Ecological Research program within the Mack Creek watershed in Oregon") +
+  theme(legend.position = "none")
+
+salamander_fig1
+
+Habitat_C <- salamander_data %>%
+  filter(unittype == "C")
+skew_C <- skewness(Habitat_C$length_2_mm, na.rm = TRUE)
+kurt_C <- kurtosis(Habitat_C$length_2_mm, na.rm = TRUE)
+
+Habitat_P <- salamander_data %>%
+  filter(unittype == "P")
+skew_P <- skewness(Habitat_P$length_2_mm, na.rm = TRUE)
+kurt_P <- kurtosis(Habitat_P$length_2_mm, na.rm = TRUE)
+
+Habitat_SC <- salamander_data %>%
+  filter(unittype == "SC")
+skew_SC <- skewness(Habitat_SC$length_2_mm, na.rm = TRUE)
+kurt_SC <- kurtosis(Habitat_SC$length_2_mm, na.rm = TRUE)
+
+salamander_data_log <- salamander_data %>%
+  mutate(length_log10 = log10(length_2_mm))
+
+Habitat_C <- salamander_data_log %>%
+  filter(unittype == "C")
+skew_C_log <- skewness(Habitat_C$length_log10, na.rm = TRUE)
+kurt_C_log <- kurtosis(Habitat_C$length_log10, na.rm = TRUE)
+
+Habitat_P <- salamander_data_log %>%
+  filter(unittype == "P")
+skew_P_log <- skewness(Habitat_P$length_log10, na.rm = TRUE)
+kurt_P_log <- kurtosis(Habitat_P$length_log10, na.rm = TRUE)
+
+Habitat_SC <- salamander_data_log %>%
+  filter(unittype == "SC")
+skew_SC_log <- skewness(Habitat_SC$length_log10, na.rm = TRUE)
+kurt_SC_log <- kurtosis(Habitat_SC$length_log10, na.rm = TRUE)
+```
+
+```{r 1b Test if satisfy need for homogeneity of variances across groups}
+salamander_var <- bartlett.test(salamander_data_log$length_log10,
+                                salamander_data_log$unittype)
+salamander_var
+```
+
+```{r 1c Test significant difference between salamander length and habitat types with a One-way ANOVA analysis}
+salamander_ANOVA <- aov(length_log10 ~ unittype, data = salamander_data_log)
+
+summary(salamander_ANOVA)
+
+salamander_Tukey <- TukeyHSD(salamander_ANOVA)
+salamander_Tukey
+```
+
+##### Question 1 Answers
+1a. All habitats are not normally distribution with data strongly skewed to the right (0.5 > skewness value > 1.0, meaning moderately skewed) with heavy tails (kurtosis value > 3, meaning leptokurtic), which is displayed in Figure 1. After applying the log-transformation to the snout-to-length data, quick skewness and kurtosis values indicate that all three habitats closely meet the criteria for normal distribution (skewness around 0 AND kurtosis around 3 values).
+
+1b. Reject the null hypothesis of Bartlett’s test that there is equal variances across groups because the p-value (0.003674) is much smaller than 0.05. In other words, variances are not homogeneous after applying the log-transformation for salamander length and habitat type. 
+
+1c. Data from part b did not display approximately equal variances!
+
+
+# 2. Coastal Giant Salamander
+```{r 2a test if cutthroat trout length and reach have normal distribution}
+# a. Filter for reach and cutthroat trout species. Plot and test whether or not there is normal distribution in dataset.
+
+trout_data <- and_vertebrates %>%
+  filter(species == "Cutthroat trout")
+unique(trout_data$reach)
+
+
+trout_fig2 <- ggplot(trout_data, 
+                          aes(x = length_1_mm, fill = reach)) +
+  geom_histogram() +
+    facet_wrap(~reach) +
+  scale_fill_manual(values = c("L" = "darkorange",
+                               "M" = "purple",
+                               "U" = "cyan4")) +
+  labs(x = "Snout-to-Fork Length (mm)",
+       y = "Trout Count",
+       title = "Distribution of Cutthroat Trout Lengths Across Various Reach Types",
+       caption = "Cutthroat Trout in Mack Creek Cut Forest lower reach (L), 
+       middle reach (M), and upper reach (U) types. Dataset collected by H.J. 
+       Andrews Long Term Ecological Research program within the Mack Creek watershed 
+       in Oregon") +
+  theme(legend.position = "none")
+
+trout_fig2
+
+Reach_L <- trout_data %>%
+  filter(reach == "L")
+skew_L <- skewness(Reach_L$length_1_mm, na.rm = TRUE)
+kurt_L <- kurtosis(Reach_L$length_1_mm, na.rm = TRUE)
+
+Reach_M <- trout_data %>%
+  filter(reach == "M")
+skew_M <- skewness(Reach_M$length_1_mm, na.rm = TRUE)
+kurt_M <- kurtosis(Reach_M$length_1_mm, na.rm = TRUE)
+
+Reach_U <- trout_data %>%
+  filter(reach == "U")
+skew_U <- skewness(Reach_U$length_1_mm, na.rm = TRUE)
+kurt_U <- kurtosis(Reach_U$length_1_mm, na.rm = TRUE)
+```
+
+```{r 2b Test if satisfy need for homogeneity of variances across groups}
+trout_var <- bartlett.test(trout_data$length_1_mm,
+                                trout_data$reach)
+trout_var
+```
+
+```{r 2c Test significant difference between trout length and reach types with a One-way ANOVA analysis}
+trout_ANOVA <- aov(length_1_mm ~ reach, data = trout_data)
+
+summary(trout_ANOVA)
+
+trout_Tukey <- TukeyHSD(trout_ANOVA)
+trout_Tukey
+
+trout_means <- trout_data %>%
+  group_by(reach) %>%
+  summarise(mean_length = mean(length_1_mm, na.rm = TRUE))
+
+trout_means
+
+trout_fig3 <- ggplot(trout_means, 
+                     aes(x = reach, y = mean_length, fill = reach)) +
+  geom_col() +
+  scale_fill_manual(values = c("L" = "darkorange",
+                               "M" = "purple",
+                               "U" = "cyan4")) +
+  labs(x = "Reach Type",
+       y = "Mean Snout-to-Fork Length (mm)",
+       title = "Mean Cutthroat Trout Lengths Across Stream Reaches",
+       caption = "Figure 3. Mean Cutthroat Trout lengths in Mack Creek Cut 
+       Forest lower (L), middle (M), and upper (U) reaches. Dataset collected 
+       by the H.J. Andrews Long Term Ecological Research program.") +
+  theme(legend.position = "none")
+
+trout_fig3
+
+```
+
+##### Question 2 Answers
+2a. All reaches are meet the criteria for normal distribution with data slightly skewed to the right (0.4 > skewness value > 0, meaning moderately skewed yet closer to almost normal distribution) with very light tails (kurtosis value < 3, meaning slightly platykurtic), which is displayed in Figure 2.
+
+2b. Reject the null hypothesis of Bartlett’s test that there is equal variances across groups because the p-value (0.004756) is much smaller than 0.05. In other words, variances in trout length are not homogeneous across different reaches. 
+
+2c. There is evidence of significant differences between trout length and reach type because the p-value (2e‑16) is smaller than 0.05 and a large F-statistic (46.87; meaning variation between reaches are large and variation within reaches are small). Post‑hoc Tukey comparisons result with trout lengths similar between Uupper and Lower reaches (p = 0.584, approximately 0.59 mm differences in values). Middle reach were significantly larger than those from both U and L reaches (p < 0.000001 for both comparisons), meaning that Middle reach Cutthroat troat were generally larger in length.
