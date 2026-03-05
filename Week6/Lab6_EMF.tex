@@ -1,0 +1,617 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{anyfontsize}
+\usepackage{multirow}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Lab 6: Non-Parametric Tests},
+  pdfauthor={Elizabeth Miles-Flynn},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Lab 6: Non-Parametric Tests}
+\author{Elizabeth Miles-Flynn}
+\date{2026-03-04}
+
+\begin{document}
+\maketitle
+
+\subsection{Setup}\label{setup}
+
+\subsection{1. Mann-Whitney U and Wilcoxon Signed-Rank
+Tests}\label{mann-whitney-u-and-wilcoxon-signed-rank-tests}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{trout\_data }\OtherTok{\textless{}{-}}\NormalTok{ and\_vertebrates }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(species }\SpecialCharTok{==} \StringTok{"Cutthroat trout"}\NormalTok{)}
+
+\FunctionTok{unique}\NormalTok{(trout\_data}\SpecialCharTok{$}\NormalTok{section)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "CC" "OG"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{trout\_fig1 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(trout\_data, }
+                          \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ length\_1\_mm, }\AttributeTok{fill =}\NormalTok{ section)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_histogram}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{section) }\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_manual}\NormalTok{(}\AttributeTok{values =} \FunctionTok{c}\NormalTok{(}\StringTok{"CC"} \OtherTok{=} \StringTok{"darkorange"}\NormalTok{,}
+                               \StringTok{"OG"} \OtherTok{=} \StringTok{"cyan4"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Snout{-}to{-}Fork Length (mm)"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Trout Count"}\NormalTok{,}
+       \AttributeTok{title =} \StringTok{"Distribution of Cutthroat Trout Lengths Across Various Forest }
+\StringTok{       Treatment Types"}\NormalTok{,}
+       \AttributeTok{caption =} \StringTok{"Figure 1: Cutthroat Trout in Mack Creek for different forest treatment }
+\StringTok{       types: Clear{-}cut regions (CC) and old{-}growth regions (OG). Dataset }
+\StringTok{       collected by H.J. Andrews Long Term Ecological Research program within }
+\StringTok{       the Mack Creek watershed in Oregon"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(trout\_fig1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: Removed 5 rows containing non-finite outside the scale range
+## (`stat_bin()`).
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab6_EMF_files/figure-latex/1a create figure for snout-to-fork length by forest treatment, test if trout length distributions are from the same or different forest treatment locations-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Data spread and central tendency}
+\NormalTok{trout\_CC }\OtherTok{\textless{}{-}}\NormalTok{ trout\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(section }\SpecialCharTok{==} \StringTok{"CC"}\NormalTok{)}
+\NormalTok{skew\_CC }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(trout\_CC}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_CC }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(trout\_CC}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_CC }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(trout\_CC}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{trout\_OG }\OtherTok{\textless{}{-}}\NormalTok{ trout\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(section }\SpecialCharTok{==} \StringTok{"OG"}\NormalTok{)}
+\NormalTok{skew\_OG }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(trout\_OG}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_OG }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(trout\_OG}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_OG }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(trout\_OG}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{section\_mann\_test }\OtherTok{\textless{}{-}} \FunctionTok{wilcox.test}\NormalTok{(trout\_CC}\SpecialCharTok{$}\NormalTok{length\_1\_mm, trout\_OG}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{paired =} \ConstantTok{FALSE}\NormalTok{)}
+\FunctionTok{print}\NormalTok{(section\_mann\_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  trout_CC$length_1_mm and trout_OG$length_1_mm
+## W = 55178843, p-value = 7.697e-16
+## alternative hypothesis: true location shift is not equal to 0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{trout\_recapture\_data }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\AttributeTok{file =} \FunctionTok{here}\NormalTok{(}\StringTok{"Week6/trout\_recapture.csv"}\NormalTok{), }
+                                 \AttributeTok{stringsAsFactors =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{trout\_fig2 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(trout\_recapture\_data, }
+                          \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ length\_1\_mm)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_histogram}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{year) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Snout{-}to{-}Fork Length (mm)"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Trout Count"}\NormalTok{,}
+       \AttributeTok{title =} \StringTok{"Distribution of Cutthroat Trout Lengths By Year"}\NormalTok{,}
+       \AttributeTok{caption =} \StringTok{"Figure 2: Cutthroat Trout length in Mack Creek for different }
+\StringTok{       years (captured and tagged in 2014; recaptured in 2015). Dataset }
+\StringTok{       collected by H.J. Andrews Long Term Ecological Research program within }
+\StringTok{       the Mack Creek watershed in Oregon"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(trout\_fig2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab6_EMF_files/figure-latex/1b same as 1a with another dataset-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Data spread and central tendency}
+\NormalTok{trout\_2014 }\OtherTok{\textless{}{-}}\NormalTok{ trout\_recapture\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(year }\SpecialCharTok{==} \StringTok{"2014"}\NormalTok{)}
+\NormalTok{skew\_2014 }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(trout\_2014}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_2014 }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(trout\_2014}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_2014 }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(trout\_2014}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{trout\_2015 }\OtherTok{\textless{}{-}}\NormalTok{ trout\_recapture\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(year }\SpecialCharTok{==} \StringTok{"2015"}\NormalTok{)}
+\NormalTok{skew\_2015 }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(trout\_2015}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_2015 }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(trout\_2015}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_2015 }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(trout\_2015}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{year\_wilcoxon\_test }\OtherTok{\textless{}{-}} \FunctionTok{wilcox.test}\NormalTok{(trout\_2014}\SpecialCharTok{$}\NormalTok{length\_1\_mm, trout\_2015}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{paired =} \ConstantTok{TRUE}\NormalTok{)}
+\FunctionTok{print}\NormalTok{(year\_wilcoxon\_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Wilcoxon signed rank test with continuity correction
+## 
+## data:  trout_2014$length_1_mm and trout_2015$length_1_mm
+## V = 625.5, p-value = 4.973e-08
+## alternative hypothesis: true location shift is not equal to 0
+\end{verbatim}
+
+\subparagraph{Question 1 answers}\label{question-1-answers}
+
+\begin{itemize}
+\tightlist
+\item
+  1a) Figure 1 shows that both forest treatment types and their
+  snout-to-fork length are almost normally distributed (CC kurtosis =
+  2.23 and OG = 2.06) with similar mean values (CC mean = 85.3 mm and OG
+  = 81.4 mm), the data is slightly skewed to the right (CC skewness =
+  0.36; OG skewness = 0.33) with two modes/large peaks. After the
+  Mann-Whitney U test to test the null hypothesis that the two forest
+  treatment types come from populations with the same distribution and
+  no difference in location, our results tell us to reject the null
+  hypothesis (p-value \textasciitilde{} 0 \textless{} 0.05 signifigance
+  level) and there is a strong difference (W = 55178843) in trout
+  lengths by location type.
+\item
+  1b) Figure 2 shows that both trout capture years almost normally
+  distributed and their snout-to-fork length are slightly leptokurtic
+  (2014 kurtosis = 3.8 and 2015 = 3.6) with sharper peak and heavier
+  tails skewed towards the right (2014 skewness = 1.03 and 2015 = 0.89),
+  with similar mean values (2014 mean = 105.5 mm and 2015 = 119.6 mm).
+  After the Wilcoxon Signed-Rank test to test the null hypothesis that
+  ranks of trout lengths are significantly different between years, our
+  results tell us to reject the null hypothesis (p-value
+  \textasciitilde{} 0 \textless{} 0.05 signifigance level) and there is
+  a strong difference (V = 625.5) in ranked trout lengths by year.
+\end{itemize}
+
+\subsection{Kruskal Wallis and post-hoc Dunn's
+test}\label{kruskal-wallis-and-post-hoc-dunns-test}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{unique}\NormalTok{(trout\_data}\SpecialCharTok{$}\NormalTok{reach)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "L" "M" "U"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{trout\_fig3 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(trout\_data, }
+                          \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ length\_1\_mm, }\AttributeTok{fill =}\NormalTok{ reach)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_histogram}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{reach) }\SpecialCharTok{+}
+  \FunctionTok{scale\_fill\_manual}\NormalTok{(}\AttributeTok{values =} \FunctionTok{c}\NormalTok{(}\StringTok{"L"} \OtherTok{=} \StringTok{"darkorange"}\NormalTok{,}
+                               \StringTok{"M"} \OtherTok{=} \StringTok{"purple"}\NormalTok{,}
+                               \StringTok{"U"} \OtherTok{=} \StringTok{"cyan4"}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Snout{-}to{-}Fork Length (mm)"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Trout Count"}\NormalTok{,}
+       \AttributeTok{title =} \StringTok{"Distribution of Cutthroat Trout Lengths Across Various Reach Types"}\NormalTok{,}
+       \AttributeTok{caption =} \StringTok{"Figure 3: Cutthroat Trout in Mack Creek Cut Forest lower reach (L), }
+\StringTok{       middle reach (M), and upper reach (U) types. Dataset collected by H.J. }
+\StringTok{       Andrews Long Term Ecological Research program within the Mack Creek watershed }
+\StringTok{       in Oregon"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{)}
+
+\FunctionTok{print}\NormalTok{(trout\_fig3)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `stat_bin()` using `bins = 30`. Pick better value `binwidth`.
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: Removed 5 rows containing non-finite outside the scale range
+## (`stat_bin()`).
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab6_EMF_files/figure-latex/2a create figure showing trout length and reach are not normally distributed-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Data spread and central tendency}
+\NormalTok{Reach\_L }\OtherTok{\textless{}{-}}\NormalTok{ trout\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(reach }\SpecialCharTok{==} \StringTok{"L"}\NormalTok{)}
+\NormalTok{skew\_L }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(Reach\_L}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_L }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(Reach\_L}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_L }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Reach\_L}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{median\_L }\OtherTok{\textless{}{-}} \FunctionTok{median}\NormalTok{(Reach\_L}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{Reach\_M }\OtherTok{\textless{}{-}}\NormalTok{ trout\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(reach }\SpecialCharTok{==} \StringTok{"M"}\NormalTok{)}
+\NormalTok{skew\_M }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(Reach\_M}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_M }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(Reach\_M}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_M }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Reach\_M}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{median\_M }\OtherTok{\textless{}{-}} \FunctionTok{median}\NormalTok{(Reach\_M}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{Reach\_U }\OtherTok{\textless{}{-}}\NormalTok{ trout\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(reach }\SpecialCharTok{==} \StringTok{"U"}\NormalTok{)}
+\NormalTok{skew\_U }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(Reach\_U}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{kurt\_U }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(Reach\_U}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{mean\_U }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(Reach\_U}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{median\_U }\OtherTok{\textless{}{-}} \FunctionTok{median}\NormalTok{(Reach\_U}\SpecialCharTok{$}\NormalTok{length\_1\_mm, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{reach\_kruskal\_test }\OtherTok{\textless{}{-}} \FunctionTok{kruskal.test}\NormalTok{(length\_1\_mm }\SpecialCharTok{\textasciitilde{}}\NormalTok{ reach, }\AttributeTok{data =}\NormalTok{ trout\_data)}
+\FunctionTok{print}\NormalTok{(reach\_kruskal\_test)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Kruskal-Wallis rank sum test
+## 
+## data:  length_1_mm by reach
+## Kruskal-Wallis chi-squared = 77.394, df = 2, p-value < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# It appears there is, so which tension levels are significantly different?}
+\NormalTok{reach\_dunn\_test }\OtherTok{\textless{}{-}} \FunctionTok{dunn.test}\NormalTok{(trout\_data}\SpecialCharTok{$}\NormalTok{length\_1\_mm, trout\_data}\SpecialCharTok{$}\NormalTok{reach)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Kruskal-Wallis rank sum test
+## 
+## data: x and group
+## Kruskal-Wallis chi-squared = 77.3942, df = 2, p-value = 0
+## 
+## 
+##                    Dunn's Pairwise Comparison of x by group                   
+##                                 (No adjustment)                               
+## Col Mean-│
+## Row Mean │          L          M
+## ─────────┼──────────────────────
+##        M │  -8.305134
+##          │     0.0000*
+##          │
+##        U │  -1.688937   6.770059
+##          │     0.0456     0.0000*
+## 
+## α = 0.05
+## Reject Ho if p ≤ α/2, where p = Pr(Z ≥ |z|)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{notation\_letters }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{reach =} \FunctionTok{c}\NormalTok{(}\StringTok{"L"}\NormalTok{, }\StringTok{"M"}\NormalTok{, }\StringTok{"U"}\NormalTok{),}
+  \AttributeTok{letters =} \FunctionTok{c}\NormalTok{(}\StringTok{"b"}\NormalTok{, }\StringTok{"a"}\NormalTok{, }\StringTok{"b"}\NormalTok{))}
+
+\NormalTok{trout\_fig4 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(trout\_data, }
+                          \FunctionTok{aes}\NormalTok{(}\AttributeTok{y =}\NormalTok{ length\_1\_mm, }\AttributeTok{x =}\NormalTok{ reach)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_boxplot}\NormalTok{() }\SpecialCharTok{+}
+    \FunctionTok{geom\_text}\NormalTok{(}\AttributeTok{data =}\NormalTok{ notation\_letters,}
+            \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ reach, }\AttributeTok{y =} \FunctionTok{min}\NormalTok{(trout\_data}\SpecialCharTok{$}\NormalTok{length\_1\_mm)}\SpecialCharTok{*}\FloatTok{1.05}\NormalTok{, }
+                \AttributeTok{label =}\NormalTok{ letters),}
+            \AttributeTok{size =} \DecValTok{5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Snout{-}to{-}Fork Length (mm)"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Trout Count"}\NormalTok{,}
+       \AttributeTok{title =} \StringTok{"Distribution of Cutthroat Trout Lengths Across Various Reach Types"}\NormalTok{,}
+       \AttributeTok{caption =} \StringTok{"Figure 3: Cutthroat Trout in Mack Creek Cut Forest lower reach (L), }
+\StringTok{       middle reach (M), and upper reach (U) types. Letters indicate Dunn’s post{-}hoc }
+\StringTok{       groupings: reaches sharing a letter do not differ significantly from each other}
+\StringTok{       (α = 0.05). Dataset collected by H.J. Andrews Long Term Ecological Research program }
+\StringTok{       within the Mack Creek watershed in Oregon"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"none"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_classic}\NormalTok{()}
+
+\FunctionTok{print}\NormalTok{(trout\_fig4)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: Removed 5 rows containing non-finite outside the scale range
+## (`stat_boxplot()`).
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: Removed 3 rows containing missing values or values outside the scale range
+## (`geom_text()`).
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Lab6_EMF_files/figure-latex/2b create a figure to showcase trout length by reach type, 2a results in notation-1.pdf}}
+
+\subparagraph{Question 2 answers}\label{question-2-answers}
+
+\begin{itemize}
+\tightlist
+\item
+  2a) All reaches are almost meet the normal distribution with data
+  slightly skewed to the right (0.4 \textgreater{} skewness value
+  \textgreater{} 0, meaning moderately skewed yet closer to almost
+  normal distribution) with very light tails (kurtosis value \textless{}
+  3, meaning slightly platykurtic), which is displayed in Figure 3 with
+  two modes/peaks by visualizing the data central tendencies (mean L =
+  81.6 mm, M = 87 mm, and U = 82.2 mm) which tends to be lower than the
+  median values (median L = 85 mm, M = 89, and U = 85 mm). After the
+  Krukal Wallis test to test the null hypothesis that no difference in
+  trout length distribution between reach groups, our results reject the
+  null hypothesis and that there is a significant difference in reaches
+  (x\^{}2 = 77.4, df = 2, p-value \textasciitilde{} 0 \textless{} 0.05
+  signifigance level). Dunn's post‑hoc comparisons show the middle reach
+  with lower values than both L (p \textless{} 0.001) and U (p
+  \textless{} 0.001). The comparison between the upper and lower reaches
+  are not significant (p = 0.046 \textgreater{} 0.025). The middle reach
+  is distinct from both L and U, while L and U do not differ
+  significantly from each other.
+\end{itemize}
+
+\subsection{Contingency Tables and the Chi-Squared
+Test}\label{contingency-tables-and-the-chi-squared-test}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{trout\_count }\OtherTok{\textless{}{-}}\NormalTok{ trout\_data }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(reach, unittype) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{n =} \FunctionTok{n}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## `summarise()` has grouped output by 'reach'. You can override using the
+## `.groups` argument.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{trout\_table }\OtherTok{\textless{}{-}}\NormalTok{ trout\_count }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{pivot\_wider}\NormalTok{(}
+    \AttributeTok{names\_from =}\NormalTok{ reach,}
+    \AttributeTok{values\_from =}\NormalTok{ n,}
+    \AttributeTok{values\_fill =} \DecValTok{0}\NormalTok{)}
+
+\NormalTok{troutDF }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(trout\_table)}
+\NormalTok{troutDF }\OtherTok{\textless{}{-}}\NormalTok{ troutDF }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{)}
+\FunctionTok{rownames}\NormalTok{(troutDF) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Cascade"}\NormalTok{, }\StringTok{"Riffle"}\NormalTok{, }\StringTok{"Isolated\_Pool"}\NormalTok{, }\StringTok{"Pool"}\NormalTok{, }\StringTok{"Rapid"}\NormalTok{, }\StringTok{"Step"}\NormalTok{, }\StringTok{"Side\_Channel"}\NormalTok{, }\StringTok{"NA"}\NormalTok{)}
+\FunctionTok{colnames}\NormalTok{(troutDF) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Lower\_Reach"}\NormalTok{, }\StringTok{"Middle\_Reach"}\NormalTok{, }\StringTok{"Upper\_Reach"}\NormalTok{)}
+
+\NormalTok{troutDF }\OtherTok{\textless{}{-}} \FunctionTok{rownames\_to\_column}\NormalTok{(troutDF, }\AttributeTok{var =} \StringTok{"Channel Type"}\NormalTok{)}
+
+\NormalTok{trout\_gt }\OtherTok{\textless{}{-}}\NormalTok{ troutDF }\SpecialCharTok{\%\textgreater{}\%}
+\FunctionTok{gt}\NormalTok{(}\AttributeTok{rowname\_col =} \StringTok{"Channel Type"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \CommentTok{\# creates base table}
+\FunctionTok{tab\_header}\NormalTok{(}\AttributeTok{title =} \StringTok{"Raw Trout Counts by Channel Habitat Type and Reach"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \CommentTok{\# adds title}
+\FunctionTok{cols\_label}\NormalTok{(}\AttributeTok{Lower\_Reach =} \StringTok{"Lower Reach"}\NormalTok{,}
+           \AttributeTok{Middle\_Reach =} \StringTok{"Middle Reach"}\NormalTok{,}
+           \AttributeTok{Upper\_Reach =} \StringTok{"Upper Reach"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \CommentTok{\# edits column names}
+\FunctionTok{grand\_summary\_rows}\NormalTok{(}\AttributeTok{columns =} \FunctionTok{c}\NormalTok{(Lower\_Reach, Middle\_Reach, Upper\_Reach),}
+\AttributeTok{fns =} \FunctionTok{list}\NormalTok{(}\AttributeTok{label =} \StringTok{"Reach Totals"}\NormalTok{) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{sum}\NormalTok{(., }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{),}
+\AttributeTok{use\_seps =} \ConstantTok{TRUE}\NormalTok{)}
+
+\NormalTok{trout\_gt}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}[t]
+\caption*{
+{\fontsize{20}{25}\selectfont  Raw Trout Counts by Channel Habitat Type and Reach\fontsize{12}{15}\selectfont }
+} 
+\fontsize{12.0pt}{14.0pt}\selectfont
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}l|rrr}
+\toprule
+ & Lower Reach & Middle Reach & Upper Reach \\ 
+\midrule\addlinespace[2.5pt]
+Cascade & 3951 & 2984 & 4484 \\ 
+Riffle & 7 & 0 & 16 \\ 
+Isolated\_Pool & 79 & 6 & 20 \\ 
+Pool & 1218 & 2121 & 2131 \\ 
+Rapid & 33 & 94 & 293 \\ 
+Step & 2 & 0 & 7 \\ 
+Side\_Channel & 1205 & 1106 & 66 \\ 
+NA & 220 & 210 & 180 \\ 
+\midrule 
+\midrule 
+Reach Totals & 6715 & 6521 & 7197 \\ 
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{troutDF\_Chi }\OtherTok{\textless{}{-}} \FunctionTok{column\_to\_rownames}\NormalTok{(troutDF, }\AttributeTok{var =} \StringTok{"Channel Type"}\NormalTok{)}
+
+\NormalTok{chi\_test }\OtherTok{\textless{}{-}} \FunctionTok{chisq.test}\NormalTok{(troutDF\_Chi)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in chisq.test(troutDF_Chi): Chi-squared approximation may be incorrect
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Examine observed counts}
+\FunctionTok{as.data.frame}\NormalTok{(chi\_test}\SpecialCharTok{$}\NormalTok{observed)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##               Lower_Reach Middle_Reach Upper_Reach
+## Cascade              3951         2984        4484
+## Riffle                  7            0          16
+## Isolated_Pool          79            6          20
+## Pool                 1218         2121        2131
+## Rapid                  33           94         293
+## Step                    2            0           7
+## Side_Channel         1205         1106          66
+## NA                    220          210         180
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Examine expected counts}
+\FunctionTok{as.data.frame}\NormalTok{(chi\_test}\SpecialCharTok{$}\NormalTok{expected)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##               Lower_Reach Middle_Reach Upper_Reach
+## Cascade       3752.683649  3644.266579 4022.049772
+## Riffle           7.558606     7.340234    8.101160
+## Isolated_Pool   34.506680    33.509764   36.983556
+## Pool          1797.633730  1745.699114 1926.667156
+## Rapid          138.026721   134.039054  147.934224
+## Step             2.957715     2.872265    3.170019
+## Side_Channel   781.165517   758.597220  837.237263
+## NA             200.467381   194.675770  214.856849
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Examine standardized residuals}
+\FunctionTok{as.data.frame}\NormalTok{(chi\_test}\SpecialCharTok{$}\NormalTok{stdres)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##               Lower_Reach Middle_Reach Upper_Reach
+## Cascade         5.9486101   -19.956888   13.625939
+## Riffle         -0.2481133    -3.285268    3.450023
+## Isolated_Pool   9.2679275    -5.774192   -3.478810
+## Pool          -19.4975680    12.721048    6.758950
+## Rapid         -11.0242451    -4.234961   14.973671
+## Step           -0.6797898    -2.054373    2.673308
+## Side_Channel   19.6879600    16.261262  -35.229519
+## NA              1.7093880     1.351373   -2.999733
+\end{verbatim}
+
+\subparagraph{Question 3 Answers}\label{question-3-answers}
+
+\begin{itemize}
+\tightlist
+\item
+  3b) Null hypothesis: There is no significant association between reach
+  type and channel habitat type occurrence. Alternative hypothesis:
+  There is a significant association between reach type and channel
+  habitat type occurrence. The chi‑square test of independence revealed
+  a highly significant association between habitat type and stream reach
+  (x²(df) = value, p \textless{} 0.001). For all three reach types,
+  cascade channel had the most abundant trout counts (L = 3951, M =
+  2984, U = 4484).
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,170 @@
+---
+title: "Lab 6: Non-Parametric Tests"
+author: "Elizabeth Miles-Flynn"
+date: "03-02-2026"
+output: pdf_document
+---
+
+# Learning Objectives
+-   Run Mann-Whitney U and Wilcoxon Signed Rank using the *wilcox.test()* function
+-   Run a Kruskal Wallis test using the *kruskal.test()* function
+-   Run post-hoc Dunn's test using the *dunn.test()* function
+-   Run a chi-squared test using the *chisq.test()* function
+-   Explore the *gt() function* for data visualization in table format
+
+#Set Up
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages("dunn.test")
+
+# Load necessary packages
+library(here)
+library(tidyverse)
+library(dunn.test)
+library(gt)
+library(paletteer)
+```
+
+# Non-Parametric Tests
+
+##### Mann-Whitney U and Wilcoxon Signed Rank tests
+*Mann-Whitney U tests*: **unpaired, two-sample t-test**; signifigant difference in **ranks** between two groups
+-   (H₀):The two groups come from populations with the same distribution and no difference in location (i.e., no shift in medians).
+-   (Ha): The two groups come from populations with different locations (i.e., one tends to have larger values than the other)
+```{r #times wool breaks on loom by type (A/B) and tension setting (L/M/H)}
+# Load in base R dataset "warpbreaks"
+wb <- warpbreaks
+
+# Examine dataset
+View(wb)
+
+# Save data by wool type
+wbA <- wb %>%
+  filter(wool == "A")
+
+wbB <- wb %>%
+  filter(wool == "B")
+
+# Is there a significant difference in wool type regarding #times breaks on loom?
+mann_test <- wilcox.test(wbA$breaks, wbB$breaks, paired = FALSE)
+mann_test
+
+
+wb_plot <- ggplot(wb, aes(x = wool, y = breaks)) +
+  geom_boxplot()
+
+mean(wbA$breaks)
+IQR(wbA$breaks)
+mean(wbB$breaks)
+IQR(wbB$breaks)
+```
+The two wool types did not differ significantly in their breaking strength (W = 431, p = 0.253). Wool type A showed a median of 31 with an interquartile range of 16.5, while wool type B had a median of 25.3 and an interquartile range of 11, indicating broadly overlapping distributions.
+
+
+*Wilcoxon Signed-Rank test*: **paired, two-sample t-test**; significant difference in **ranks** between two groups
+-   (H₀): The median difference between paired observations is zero.
+\mathrm{median}(A-B)=0
+-   (Ha), two‑sided: The median difference is not zero.
+\mathrm{median}(A-B)\neq 0
+```{r paired wool breaks, skein lengths (A) b4 and (B) after humidity increase}
+# Is there a significant difference in wool breaks (ex. #times breaks on loom) in dry versus humid room conditions?
+wilcox_test <- wilcox.test(wbA$breaks, wbB$breaks, paired = TRUE)
+wilcox_test
+```
+A Wilcoxon signed‑rank test found no statistically significant difference between the paired wool‑break measurements from types A and B (V = 234, p = 0.056), indicating that the median paired difference did not differ from zero.
+
+##### Kruskal Wallis and Dunn's tests
+*Kruskal Wallis test*: **one-way ANOVA**; significant difference in **ranks** between 3+ groups
+-   H0: All groups come from populations with the same distribution and no difference in location (often interpreted as no difference in medians when shapes are similar)
+-   HA: At least one group differs in location from the others
+
+*Dunn's post-hoc test*: determine which groups are significantly different (input raw data values only)
+```{r Significant difference in wool tension regarding #times break on loom?}
+kruskal_test <- kruskal.test(breaks ~ tension, data = wb)
+
+# It appears there is, so which tension levels are significantly different?
+dunn_test <- dunn.test(wb$breaks, wb$tension)
+```
+A Kruskal–Wallis test showed a significant difference in the distribution of x among the three groups (χ² = 10.81, df = 2, p < 0.001). Dunn’s post‑hoc comparisons indicated that both the M and H groups had significantly higher values than the L group (p = 0.045 and p = 0.0005, respectively), while M and H did not differ significantly from each other.
+
+##### Chi-Squared test
+*Chi-squared tests*: analyze outcomes of discrete variables. (ex. one-way chi-squared test for likelihood discrete outcomes for a single category variable are the same)
+-   H0: Likelihood all outcomes are the same
+-   HA: Likelihood all outcomes are not the same
+```{r proportions of bird species visit feeder are the same}
+# Create a sequence of number of different bird types visiting a feeder.
+# Numbers represent the following birds: Carolina wren, cardinals, tufted titmice, and mockingbirds
+birds <- c(12,14,11,15)
+
+# Conduct a chi-squared test to test for equal likelihood of all outcomes
+chi_test <- chisq.test(birds)
+
+# Examine observed counts
+chi_test$observed
+
+# Examine expected counts
+chi_test$expected
+
+# Examine standardized residuals
+chi_test$stdres
+```
+Fail to reject the null hypothesis that the likelihood of all outcomes are the same. The maximum number of is 15 and the lowest number is 11, which is a small range of 4 which supports why each outcome has an equal likelihood of birds visiting a feeder regardless of bird type.
+
+
+If you want to change the code above to account for different expected proportions, you can edit the p= argument in the function to account for this. So, for example, if you thought half of all birds would be mockingbirds, with all remaining species being approximately equal, you might write the following:
+      chisq.test(birds, p = c(0.17, 0.17, 0.16, 0.50))
+When there is more than a single outcome, we may use what are called contingency tables to compare proportions across multiple categories or groups each with multiple possible outcomes.
+
+```{r hypothesize that the proportions of different bird species visiting different feeder types are the same.}
+# Create counts of bird species visiting three different feeder
+# types - suet, seed, and mealworm.
+wren <- c(12, 17, 9)
+cardinal <- c(14, 20, 21)
+titmouse <- c(11, 15, 7)
+mockingbird <- c(15, 4, 2)
+
+# Create data table.
+birdTable <- cbind(wren, cardinal, titmouse, mockingbird)
+
+# Update column names.
+rownames(birdTable) <- c("Suet", "Seed", "Mealworm")
+```
+Our research question is: Is there a significant effect of feeder type on bird species occurrence?
+-   H0: There is no significant association between feeder type and bird species occurrence.
+-   HA: There is a significant association between feeder type and bird species occurrence.
+
+
+##### Data Visualization
+Make a table that will retain their formatting, practice using the gt() function R, which can be used in a normal tidyverse pipe format.
+```{r}
+# Make the bird dataset you created above a dataframe.
+birdDF <- as.data.frame(birdTable)
+
+# Make rownames their own column.
+birdDF <- rownames_to_column(birdDF, var = "Feeder")
+
+# Create a table of recorded bird species visiting different feeders.
+bird_gt <- birdDF %>%
+gt(rowname_col = "Feeder") %>% # creates base table
+tab_header(title = "Bird Species Counts by Feeder Type") %>% # adds title
+cols_label(wren = "Carolina Wren",
+cardinal = "Cardinal",
+titmouse = "Tufted Titmouse",
+mockingbird = "Mockingbird") %>% # edits column names
+grand_summary_rows(columns = c(wren, cardinal, titmouse, mockingbird),
+fns = list(label = "Total") ~ sum(., na.rm = TRUE),
+use_seps = TRUE) %>% # adds grand total row
+data_color(columns = c(wren, cardinal, titmouse, mockingbird),
+palette = c("#C0D8F0", "#5A7ECB"), # endpoint colors
+alpha = 0.75) # slightly transparent
+
+# Examine table.
+bird_gt
+
+# Save out your table as an html file.
+gtsave(bird_gt,
+"bird_feed_table.html",
+path = here()) # optional but good to specify filepath
+```

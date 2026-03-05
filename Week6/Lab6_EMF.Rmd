@@ -1,0 +1,236 @@
+---
+title: "Lab 6: Non-Parametric Tests"
+author: "Elizabeth Miles-Flynn"
+date: "2026-03-04"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+## Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages('tinytex')
+#tinytex::install_tinytex()
+
+# Load proper packages and data
+library(tinytex)
+library(here)
+library(tidyverse)
+library(dunn.test)
+library(gt)
+library(dplyr)
+library(paletteer)
+library(moments)
+library(lterdatasampler)
+```
+
+## 1. Mann-Whitney U and Wilcoxon Signed-Rank Tests
+```{r 1a create figure for snout-to-fork length by forest treatment, test if trout length distributions are from the same or different forest treatment locations}
+trout_data <- and_vertebrates %>%
+  filter(species == "Cutthroat trout")
+
+unique(trout_data$section)
+
+trout_fig1 <- ggplot(trout_data, 
+                          aes(x = length_1_mm, fill = section)) +
+  geom_histogram() +
+    facet_wrap(~section) +
+  scale_fill_manual(values = c("CC" = "darkorange",
+                               "OG" = "cyan4")) +
+  labs(x = "Snout-to-Fork Length (mm)",
+       y = "Trout Count",
+       title = "Distribution of Cutthroat Trout Lengths Across Various Forest 
+       Treatment Types",
+       caption = "Figure 1: Cutthroat Trout in Mack Creek for different forest treatment 
+       types: Clear-cut regions (CC) and old-growth regions (OG). Dataset 
+       collected by H.J. Andrews Long Term Ecological Research program within 
+       the Mack Creek watershed in Oregon") +
+  theme(legend.position = "none")
+
+print(trout_fig1)
+
+# Data spread and central tendency
+trout_CC <- trout_data %>%
+  filter(section == "CC")
+skew_CC <- skewness(trout_CC$length_1_mm, na.rm = TRUE)
+kurt_CC <- kurtosis(trout_CC$length_1_mm, na.rm = TRUE)
+mean_CC <- mean(trout_CC$length_1_mm, na.rm = TRUE)
+
+trout_OG <- trout_data %>%
+  filter(section == "OG")
+skew_OG <- skewness(trout_OG$length_1_mm, na.rm = TRUE)
+kurt_OG <- kurtosis(trout_OG$length_1_mm, na.rm = TRUE)
+mean_OG <- mean(trout_OG$length_1_mm, na.rm = TRUE)
+
+section_mann_test <- wilcox.test(trout_CC$length_1_mm, trout_OG$length_1_mm, paired = FALSE)
+print(section_mann_test)
+```
+
+```{r 1b same as 1a with another dataset}
+trout_recapture_data <- read.csv(file = here("Week6/trout_recapture.csv"), 
+                                 stringsAsFactors = TRUE)
+
+trout_fig2 <- ggplot(trout_recapture_data, 
+                          aes(x = length_1_mm)) +
+  geom_histogram() +
+    facet_wrap(~year) +
+  labs(x = "Snout-to-Fork Length (mm)",
+       y = "Trout Count",
+       title = "Distribution of Cutthroat Trout Lengths By Year",
+       caption = "Figure 2: Cutthroat Trout length in Mack Creek for different 
+       years (captured and tagged in 2014; recaptured in 2015). Dataset 
+       collected by H.J. Andrews Long Term Ecological Research program within 
+       the Mack Creek watershed in Oregon") +
+  theme(legend.position = "none")
+
+print(trout_fig2)
+
+# Data spread and central tendency
+trout_2014 <- trout_recapture_data %>%
+  filter(year == "2014")
+skew_2014 <- skewness(trout_2014$length_1_mm, na.rm = TRUE)
+kurt_2014 <- kurtosis(trout_2014$length_1_mm, na.rm = TRUE)
+mean_2014 <- mean(trout_2014$length_1_mm, na.rm = TRUE)
+
+trout_2015 <- trout_recapture_data %>%
+  filter(year == "2015")
+skew_2015 <- skewness(trout_2015$length_1_mm, na.rm = TRUE)
+kurt_2015 <- kurtosis(trout_2015$length_1_mm, na.rm = TRUE)
+mean_2015 <- mean(trout_2015$length_1_mm, na.rm = TRUE)
+
+year_wilcoxon_test <- wilcox.test(trout_2014$length_1_mm, trout_2015$length_1_mm, paired = TRUE)
+print(year_wilcoxon_test)
+```
+
+##### Question 1 answers
+-   1a) Figure 1 shows that both forest treatment types and their snout-to-fork length are almost normally distributed (CC kurtosis = 2.23 and OG = 2.06) with similar mean values (CC mean = 85.3 mm and OG = 81.4 mm), the data is slightly skewed to the right (CC skewness = 0.36; OG skewness = 0.33) with two modes/large peaks. After the Mann-Whitney U test to test the null hypothesis that the two forest treatment types come from populations with the same distribution and no difference in location, our results tell us to reject the null hypothesis (p-value ~ 0 < 0.05 signifigance level) and there is a strong difference (W = 55178843) in trout lengths by location type. 
+-   1b) Figure 2 shows that both trout capture years almost normally distributed and their snout-to-fork length are slightly leptokurtic (2014 kurtosis = 3.8 and 2015 = 3.6) with sharper peak and heavier tails skewed towards the right (2014 skewness = 1.03 and 2015 = 0.89), with similar mean values (2014 mean = 105.5 mm and 2015 = 119.6 mm). After the Wilcoxon Signed-Rank test to test the null hypothesis that ranks of trout lengths are significantly different between years, our results tell us to reject the null hypothesis (p-value ~ 0 < 0.05 signifigance level) and there is a strong difference (V = 625.5) in ranked trout lengths by year. 
+
+## Kruskal Wallis and post-hoc Dunn's test
+```{r 2a create figure showing trout length and reach are not normally distributed}
+unique(trout_data$reach)
+
+trout_fig3 <- ggplot(trout_data, 
+                          aes(x = length_1_mm, fill = reach)) +
+  geom_histogram() +
+    facet_wrap(~reach) +
+  scale_fill_manual(values = c("L" = "darkorange",
+                               "M" = "purple",
+                               "U" = "cyan4")) +
+  labs(x = "Snout-to-Fork Length (mm)",
+       y = "Trout Count",
+       title = "Distribution of Cutthroat Trout Lengths Across Various Reach Types",
+       caption = "Figure 3: Cutthroat Trout in Mack Creek Cut Forest lower reach (L), 
+       middle reach (M), and upper reach (U) types. Dataset collected by H.J. 
+       Andrews Long Term Ecological Research program within the Mack Creek watershed 
+       in Oregon") +
+  theme(legend.position = "none")
+
+print(trout_fig3)
+
+# Data spread and central tendency
+Reach_L <- trout_data %>%
+  filter(reach == "L")
+skew_L <- skewness(Reach_L$length_1_mm, na.rm = TRUE)
+kurt_L <- kurtosis(Reach_L$length_1_mm, na.rm = TRUE)
+mean_L <- mean(Reach_L$length_1_mm, na.rm = TRUE)
+median_L <- median(Reach_L$length_1_mm, na.rm = TRUE)
+
+Reach_M <- trout_data %>%
+  filter(reach == "M")
+skew_M <- skewness(Reach_M$length_1_mm, na.rm = TRUE)
+kurt_M <- kurtosis(Reach_M$length_1_mm, na.rm = TRUE)
+mean_M <- mean(Reach_M$length_1_mm, na.rm = TRUE)
+median_M <- median(Reach_M$length_1_mm, na.rm = TRUE)
+
+Reach_U <- trout_data %>%
+  filter(reach == "U")
+skew_U <- skewness(Reach_U$length_1_mm, na.rm = TRUE)
+kurt_U <- kurtosis(Reach_U$length_1_mm, na.rm = TRUE)
+mean_U <- mean(Reach_U$length_1_mm, na.rm = TRUE)
+median_U <- median(Reach_U$length_1_mm, na.rm = TRUE)
+
+reach_kruskal_test <- kruskal.test(length_1_mm ~ reach, data = trout_data)
+print(reach_kruskal_test)
+
+# It appears there is, so which tension levels are significantly different?
+reach_dunn_test <- dunn.test(trout_data$length_1_mm, trout_data$reach)
+```
+
+```{r 2b create a figure to showcase trout length by reach type, 2a results in notation}
+notation_letters <- data.frame(
+  reach = c("L", "M", "U"),
+  letters = c("b", "a", "b"))
+
+trout_fig4 <- ggplot(trout_data, 
+                          aes(y = length_1_mm, x = reach)) +
+  geom_boxplot() +
+    geom_text(data = notation_letters,
+            aes(x = reach, y = min(trout_data$length_1_mm)*1.05, 
+                label = letters),
+            size = 5) +
+  labs(x = "Snout-to-Fork Length (mm)",
+       y = "Trout Count",
+       title = "Distribution of Cutthroat Trout Lengths Across Various Reach Types",
+       caption = "Figure 3: Cutthroat Trout in Mack Creek Cut Forest lower reach (L), 
+       middle reach (M), and upper reach (U) types. Letters indicate Dunn’s post-hoc 
+       groupings: reaches sharing a letter do not differ significantly from each other
+       (α = 0.05). Dataset collected by H.J. Andrews Long Term Ecological Research program 
+       within the Mack Creek watershed in Oregon") +
+  theme(legend.position = "none") +
+  theme_classic()
+
+print(trout_fig4)
+```
+
+##### Question 2 answers
+-   2a) All reaches are almost meet the normal distribution with data slightly skewed to the right (0.4 > skewness value > 0, meaning moderately skewed yet closer to almost normal distribution) with very light tails (kurtosis value < 3, meaning slightly platykurtic), which is displayed in Figure 3 with two modes/peaks by visualizing the data central tendencies (mean L = 81.6 mm, M = 87 mm, and U = 82.2 mm) which tends to be lower than the median values (median L = 85 mm, M = 89, and U = 85 mm). After the Krukal Wallis test to test the null hypothesis that no difference in trout length distribution between reach groups, our results reject the null hypothesis and that there is a significant difference in reaches (x^2 = 77.4, df = 2, p-value ~ 0 < 0.05 signifigance level). Dunn’s post‑hoc comparisons show the middle reach with lower values than both L (p < 0.001) and U (p < 0.001). The comparison between the upper and lower reaches are not significant (p = 0.046 > 0.025). The middle reach is distinct from both L and U, while L and U do not differ significantly from each other.
+
+## Contingency Tables and the Chi-Squared Test
+```{r 3a contingency table for trout counts per habitat type by reach}
+trout_count <- trout_data %>%
+  group_by(reach, unittype) %>%
+  summarise(n = n())
+
+trout_table <- trout_count %>%
+  pivot_wider(
+    names_from = reach,
+    values_from = n,
+    values_fill = 0)
+
+troutDF <- as.data.frame(trout_table)
+troutDF <- troutDF %>% select(-1)
+rownames(troutDF) <- c("Cascade", "Riffle", "Isolated_Pool", "Pool", "Rapid", "Step", "Side_Channel", "NA")
+colnames(troutDF) <- c("Lower_Reach", "Middle_Reach", "Upper_Reach")
+
+troutDF <- rownames_to_column(troutDF, var = "Channel Type")
+
+trout_gt <- troutDF %>%
+gt(rowname_col = "Channel Type") %>% # creates base table
+tab_header(title = "Raw Trout Counts by Channel Habitat Type and Reach") %>% # adds title
+cols_label(Lower_Reach = "Lower Reach",
+           Middle_Reach = "Middle Reach",
+           Upper_Reach = "Upper Reach") %>% # edits column names
+grand_summary_rows(columns = c(Lower_Reach, Middle_Reach, Upper_Reach),
+fns = list(label = "Reach Totals") ~ sum(., na.rm = TRUE),
+use_seps = TRUE)
+```
+
+```{r 3b Chi-Squared Test on dataset}
+troutDF_Chi <- column_to_rownames(troutDF, var = "Channel Type")
+
+chi_test <- chisq.test(troutDF_Chi)
+
+# Examine observed counts
+as.data.frame(chi_test$observed)
+
+# Examine expected counts
+as.data.frame(chi_test$expected)
+
+# Examine standardized residuals
+as.data.frame(chi_test$stdres)
+```
+##### Question 3 Answers
+-   3b) Null hypothesis: There is no significant association between reach type and channel habitat type occurrence. Alternative hypothesis: There is a significant association between reach type and channel habitat type occurrence. The chi‑square test of independence revealed a highly significant association between habitat type and stream reach (x²(df) = value, p < 0.001). For all three reach types, cascade channel had the most abundant trout counts (L = 3951, M = 2984, U = 4484).
