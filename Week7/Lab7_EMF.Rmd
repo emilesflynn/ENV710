@@ -1,0 +1,276 @@
+---
+title: "Lab 7: Linear Regression"
+author: "Elizabeth Miles-Flynn"
+date: "2026-03-17"
+output: pdf_document
+---
+
+## 1) Load, tidy, and combine the datasets
+
+```{r Load, tidy, and combine the datasets}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load necessary packages
+library(here)
+library(tidyverse)
+
+# Load necessary data
+NC_census <- read.csv(file = here("Week7/NC_Census.csv"),
+                      stringsAsFactors = TRUE)
+NC_Rec_Acre <- read.csv(file = here("Week7/NC_Recreation_Acreage.csv"),
+                        stringsAsFactors = TRUE)
+
+Sum_NC_Rec <- NC_Rec_Acre %>%
+  filter(Area.Name %in% c("Chatham County", "Wake County", "Alamance County", "Orange County", "Durham County", "Caswell County", "Person County", "Granville County", "Franklin County", "Vance County", "Lee County", "Moore County", "Randolph County", "Guilford County", "Rockingham County", "Halifax County", "Nash County", "Wilson County", "Johnston County", "Harnett County")) %>%
+  group_by(Area.Name) %>%
+  summarize(total_acres = sum(Value, na.rm = TRUE))
+
+NC_census_clean <- NC_census %>%
+  filter(Fact %in% c("Population estimates, July 1, 2023, (V2023)", "Persons under 18 years, percent", "Persons 65 years and over, percent", "Female persons, percent", "White alone, percent", "Black alone, percent (a)", "Hispanic or Latino, percent (b)", "Median value of owner-occupied housing units, 2019-2023", "Persons per household, 2019-2023", "Median households income (in 2023 dollars), 2019-2023")) %>%
+  select(-Fact.Note)
+
+NC_census_clean <- t(NC_census_clean)
+NC_census_clean <- NC_census_clean[-1, ]
+rownames(NC_census_clean) <- c("Chatham", "Wake", "Alamance", "Orange", "Durham", "Caswell", "Person", "Granville", "Franklin", "Vance", "Lee", "Moore", "Randolph", "Guilford", "Rockingham", "Halifax", "Nash", "Wilson", "Johnston", "Harnett")
+colnames(NC_census_clean) <- c("Pop_2023", "under_18_%", "over_65_%", "female_%", "White_%", "Black_%", "Latino_%", "Household_Cost_$", "Household_#", "Household_Income_$")
+
+NC_census_clean <- as.data.frame(NC_census_clean, stringsAsFactors = FALSE)
+
+NC_census_clean <- NC_census_clean %>%
+  mutate(Total_acre = Sum_NC_Rec$total_acres) %>%
+  rownames_to_column(var = "County") %>%
+  mutate(across(-1, ~ as.numeric(gsub("[^0-9.-]", "", .x))))
+```
+
+## 2) Multiple Linear Regression
+
+#### Step 1 - Define your research question
+
+Is there a relationship between total outdoor recreation acreage and population size, demographic data (age, gender, ethnicity), or household data (median unit costs, persons per household, median household income)?
+
+Hypothesis
+
+1.  **Population size**: I hypothesize that there is a negative relationship between total outdoor recreation acreage and population size, because there will be a higher total acre value for lower population density areas, for example rural communities with less people will have greater green space per person.
+
+2.  **Demographic data**: I predict that total outdoor recreation acreage will have a positive relationship with persons under 18 years (%) and a negative relationship with persons over 65 years (%), because children tend to live in closer proximity to parks with greater recreational acreage than retired-age people. Total outdoor recreational acreage will be greater for white populations than other ethnic groups due to historical red-lining zoning practices that position marginalize communities away from green spaces.
+
+3.  **Household data**: I believe more expensive household units, with fewer persons per household, and greater median household imcomes will be a strong predictor of greater total outdoor recreation acreage, because green spaces are more abundant in richer neighborhoods.
+
+#### Step 2 - Examine your data and possible correlations
+
+```{r create figures to explore the data distribution and relationships}
+
+## Create and examine histograms of raw values.
+hist_total_acre <- ggplot(NC_census_clean,
+                   aes(x = County, y = Total_acre)) +
+  geom_col(fill = "darkblue") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(y = "Total Acre",
+       title = "Total Outdoor Recreation Acreage for Each NC County",
+       caption = "The sum of all local, state, and federal outdoor recreation 
+       agreage data for 20 counties in North Carolina. Recreation dataset was 
+       collected by the North Carolina Office of State Budget and Management.")
+
+print(hist_total_acre)
+
+## Create and examine an initial scatterplot of data.
+scatter_pop <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = Pop_2023)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_u18 <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `under_18_%`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_o65 <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `over_65_%`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_f <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `female_%`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_white <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `White_%`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_black <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `Black_%`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_latino <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `Latino_%`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_cost <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `Household_Cost_$`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_ppl <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `Household_#`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+scatter_income <- ggplot(NC_census_clean,
+                      aes(x = Total_acre, y = `Household_Income_$`)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+
+print(scatter_pop)
+# Many outliers (very high population size around 15200 acres) and minimal slope (flat regression line)
+print(scatter_u18)
+# Large range of percentages (10-25%) with minimal slope (flat regression line)
+print(scatter_o65)
+# larger percentage range (12-26%) for small acre regions, smaller range for larger acres (14-18%), with negative slope overall (declining regression line)
+print(scatter_f)
+# Two outliers below 49% resulting in a negative slope (declining linear regression line)
+print(scatter_white)
+# Very large percentage range (40-90%) with a slight positive regression line slope
+print(scatter_black)
+# Very large percentage range (5-55%) with a slight negative regression line slope
+print(scatter_latino)
+# Some extreme outlier points above 15% and below 5% with lead to a slightly increasing regression line slope
+print(scatter_cost)
+# large distribution spread of points with a slight increasing regression line slope
+print(scatter_ppl)
+# Compact distribution (range is between 22-28) with an positive regression line slope
+print(scatter_income)
+# Large spread with a positive linear regression line slope
+```
+
+#### Step 3 - Fit regression model
+
+```{r Fit linear regression model with one dependent and one independent variable}
+pop.lm1 <- lm(Total_acre ~ Pop_2023, data = NC_census_clean)
+summary(pop.lm1)
+# There is no linear relationship between total outdoor recreation acreage and Population estimates from July 1, 2023, due to a greater p-value (p=0.92) than statistical signifigance (a=0.05). Population explains 0.06% (Adj R2 = -0.0549) of the variation in acreage.
+
+u18.lm2 <- lm(Total_acre ~ `under_18_%`, data = NC_census_clean)
+summary(u18.lm2)
+# There is no linear relationship between total outdoor recreation acreage and Persons under 18 years (%), due to a greater p-value (p=0.88) than statistical signifigance (a=0.05). Persons under 18 years old explains 0.05% (Adj R2 = -0.0542) of the variation in acreage.
+
+o65.lm3 <- lm(Total_acre ~ `over_65_%`, data = NC_census_clean)
+summary(o65.lm3)
+# There is no linear relationship between total outdoor recreation acreage and Persons over 65 years (%), due to a greater p-value (p=0.32) than statistical signifigance (a=0.05). Persons over 65 years old explains 0.002% (Adj R2 = 0.0019) of the variation in acreage.
+
+f.lm4 <- lm(Total_acre ~ `female_%`, data = NC_census_clean)
+summary(f.lm4)
+# There is no linear relationship between total outdoor recreation acreage and females (%), due to a greater p-value (p=0.72) than statistical signifigance (a=0.05). Females explains 0.05% (Aj R2 = -0.0475) of the variation in acreage.
+
+w.lm5 <- lm(Total_acre ~ `White_%`, data = NC_census_clean)
+summary(w.lm5)
+# There is no linear relationship between total outdoor recreation acreage and white demographic group (%), due to a greater p-value (p=0.89) than statistical signifigance (a=0.05). Whites explains 0.05% (Aj R2 = -0.0546) of the variation in acreage.
+
+b.lm6 <- lm(Total_acre ~ `Black_%`, data = NC_census_clean)
+summary(b.lm6)
+# There is no linear relationship between total outdoor recreation acreage and black demographic group (%), due to a greater p-value (p=0.89) than statistical signifigance (a=0.05). Blacks explains 0.05% (Aj R2 = -0.0543) of the variation in acreage.
+
+l.lm7 <- lm(Total_acre ~ `Latino_%`, data = NC_census_clean)
+summary(l.lm7)
+# There is no linear relationship between total outdoor recreation acreage and hispanic or latino demographic group (%), due to a greater p-value (p=0.81) than statistical signifigance (a=0.05). Hispanics or Latinos explains 0.05% (Aj R2 = -0.0521) of the variation in acreage.
+
+cost.lm8 <- lm(Total_acre ~ `Household_Cost_$`, data = NC_census_clean)
+summary(cost.lm8)
+# There is no linear relationship between total outdoor recreation acreage and houshold market costs ($), due to a greater p-value (p=0.66) than statistical signifigance (a=0.05). Household market costs explains 0.05% (Aj R2 = -0.0439) of the variation in acreage.
+
+ppl.lm9 <- lm(Total_acre ~ `Household_#`, data = NC_census_clean)
+summary(ppl.lm9)
+# There is no linear relationship between total outdoor recreation acreage and number of persons per household (#), due to a greater p-value (p=0.43) than statistical signifigance (a=0.05). Number of persons in each household explains 0.05% (Aj R2 = -0.0187) of the variation in acreage.
+
+income.lm10 <- lm(Total_acre ~ `Household_Income_$`, data = NC_census_clean)
+summary(income.lm10)
+# There is no linear relationship between total outdoor recreation acreage and the average household income ($), due to a greater p-value (p=0.53) than statistical signifigance (a=0.05). The average household income explains 0.05% (Aj R2 = -0.0543) of the variation in acreage.
+```
+
+#### Step 4 - Evaluate Model Diagnostics
+```{r first fit the model to your data and then examine the model fit}
+## Examine model residual plots (4 in total)
+windows()
+par(mfrow = c(2,2))
+
+
+
+plot(pop.lm1)
+# (1) potential non-linear relationship, (2) normally distributed, (3) not homoscedastic, (4) no influential outliers
+plot(u18.lm2)
+# (1) No non-linear relationships, (2) normally distributed, (3) slightly homoscedastic, (4) 19 may be an influential outlier
+plot(o65.lm3)
+# slightly fits the model well
+plot(f.lm4)
+# slightly fits the model well
+plot(w.lm5)
+# slightly fits the model well
+plot(b.lm6)
+# fits the model well
+plot(l.lm7)
+# (1) potential non-linear relationship, (2) normally distributed, (3) slightly homoscedastic, (4) no influential outliers (maybe 11 and 19)
+plot(cost.lm8)
+# slightly fits the model well
+plot(ppl.lm9)
+# slightly fits the model well expect for (4) 19 and 20 are influential outliers
+plot(income.lm10)
+# fits the model well
+
+## Log-transformation acre values
+NC_census_clean$Log_Total_acre <- log10(NC_census_clean$Total_acre)
+## Re-fit model using these values
+pop.lm11 <- lm(Log_Total_acre ~ Pop_2023, data = NC_census_clean)
+## Examine the results and the residuals
+summary(pop.lm11)
+# no linear relationship (p = 0.69)
+plot(pop.lm11)
+# slightly fits the model
+
+u18.lm12 <- lm(Log_Total_acre ~ `under_18_%`, data = NC_census_clean)
+summary(u18.lm12)
+plot(u18.lm12)
+
+o65.lm13 <- lm(Log_Total_acre ~ `over_65_%`, data = NC_census_clean)
+summary(o65.lm13)
+plot(o65.lm13)
+
+f.lm14 <- lm(Log_Total_acre ~ `female_%`, data = NC_census_clean)
+summary(f.lm14)
+plot(f.lm14)
+
+w.lm15 <- lm(Log_Total_acre ~ `White_%`, data = NC_census_clean)
+summary(w.lm15)
+plot(w.lm15)
+
+b.lm16 <- lm(Log_Total_acre ~ `Black_%`, data = NC_census_clean)
+summary(b.lm16)
+plot(b.lm16)
+
+l.lm17 <- lm(Log_Total_acre ~ `Latino_%`, data = NC_census_clean)
+summary(l.lm17)
+plot(l.lm17)
+
+cost.lm18 <- lm(Log_Total_acre ~ `Household_Cost_$`, data = NC_census_clean)
+summary(cost.lm18)
+plot(cost.lm18)
+
+ppl.lm19 <- lm(Log_Total_acre ~ `Household_#`, data = NC_census_clean)
+summary(ppl.lm19)
+plot(ppl.lm19)
+
+income.lm20 <- lm(Log_Total_acre ~ `Household_Income_$`, data = NC_census_clean)
+summary(income.lm20)
+plot(income.lm20)
+# All log transformations still had a p-value greater than 0.05 significance level.Overall, diagnostic models were a better fit for the distribution of the dataset.
+
+
+
+## AIC test
+
+AIC(pop.lm1, u18.lm2, o65.lm3, f.lm4, w.lm5, b.lm6, l.lm7, cost.lm8, ppl.lm9, income.lm10)
+# Except for pop.lm1, the change in AIC is less than 2 between all models meaning they are  considered similarly good fits for predicting total outdoor acreage.
+```
+

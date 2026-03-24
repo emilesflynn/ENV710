@@ -1,0 +1,42 @@
+---
+title: "ENV710_Mar_4_Class_Activity"
+author: "Elizabeth Miles-Flynn"
+date: "2026-03-04"
+output: pdf_document
+---
+
+## Set Up
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+```
+
+```{r Class Exercise on 3/4/26}
+
+class_data <- read.csv(file = here("Week7/ENV710_3.4.26_data - Sheet1.csv"), 
+                                 stringsAsFactors = TRUE)
+
+# Explore some relationships
+plot(Height_cm ~ Foot_cm, data = class_data)
+plot(Height_cm ~ Cousin_n, data = class_data)
+
+## Run and assess the full model. Calc your own residual
+class_model_full <- lm(Height_cm ~ Cousin_n + Foot_cm + Age_class + Vision, data = class_data)
+summary(class_model_full)
+plot(class_model_full)
+# only add significantly significant terms
+## Height = 63.0944 + 4.3739(Foot_cm)
+# Calculate own residual
+## estimated height = 63.0944 + 4.3739(23.5)
+63.0944+4.3739*23.5
+# = 165.881
+
+
+## run and assess the smart model
+class_model_smart <- lm(Height_cm ~ Foot_cm + Age_class, data = class_data)
+summary(class_model_smart)
+plot(class_model_smart)
+
+
+```
+

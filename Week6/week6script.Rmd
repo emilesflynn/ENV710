@@ -18,6 +18,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 
 #install.packages("dunn.test")
+#install.packages("gt")
+#install.packages("paletteer")
 
 # Load necessary packages
 library(here)
